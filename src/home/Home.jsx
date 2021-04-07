@@ -30,7 +30,7 @@ function Home() {
 
     return (
         <div>
-            <h2>You're logged in with Facebook!!</h2>
+            <h2>You're logged in</h2>
             <p>All accounts from secure api end point:</p>
             <table className="table table-striped">
                 <thead>
