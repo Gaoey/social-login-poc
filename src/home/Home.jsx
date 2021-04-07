@@ -37,6 +37,7 @@ function Home() {
                     <tr>
                         <th>Id</th>
                         <th>Facebook Id</th>
+                        <th>Google Id</th>
                         <th>Name</th>
                         <th>Extra Info</th>
                         <th></th>
@@ -47,6 +48,7 @@ function Home() {
                         <tr key={account.id}>
                             <td>{account.id}</td>
                             <td>{account.facebookId}</td>
+                            <td>{account.googleId}</td>
                             <td>{account.name}</td>
                             <td>{account.extraInfo}</td>
                             <td className="text-right" style={{ whiteSpace: 'nowrap' }}>
