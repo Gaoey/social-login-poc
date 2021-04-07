@@ -1,10 +1,10 @@
-import React from 'react';
-import { Route, Switch, Redirect, useLocation } from 'react-router-dom';
-
-import { Nav, PrivateRoute } from '_components';
-import { Home } from 'home/Home';
 import { EditAccount } from 'home/EditAccount';
+import { Home } from 'home/Home';
 import { Login } from 'login/Login';
+import React from 'react';
+import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
+import { Nav, PrivateRoute } from '_components';
+
 
 function App() {
     const pathname = useLocation().pathname || '';
@@ -25,4 +25,4 @@ function App() {
     );
 }
 
-export { App }; 
+export { App };

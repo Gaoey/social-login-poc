@@ -10,8 +10,8 @@ export function errorInterceptor() {
             console.error(error);
             return;
         }
-    
-        if ([401, 403].includes(response.status) && accountService.accountValue) {
+
+        if ([401, 403].includes(response.status)) {
             // auto logout if 401 or 403 response returned from api
             accountService.logout();
         }
