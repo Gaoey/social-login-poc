@@ -4,7 +4,7 @@ import { accountService } from '_services';
 import * as R from 'ramda'
 
 // array in local storage for accounts
-const accountsKey = 'react-facebook-login-accounts';
+const accountsKey = 'react-social-login-accounts';
 let accounts = JSON.parse(localStorage.getItem(accountsKey)) || [];
 
 export function fakeBackend() {
@@ -54,13 +54,13 @@ export function fakeBackend() {
                             const data = R.pathOr(null, ["data"], response)
                             if (R.isNil(data)) return unauthorized()
                             if (data.error) return unauthorized(data.error.message);
-
-                            let account = accounts.find(x => x.facebookId === data.id);
+                            let account = accounts.find(x => x.socialId === data.id);
                             if (!account) {
                                 // create new account if first time logging in
                                 account = {
                                     id: newAccountId(),
-                                    facebookId: data.id,
+                                    socialId: data.id,
+                                    brand: 'facebook',
                                     name: data.name,
                                     extraInfo: `This is some extra info about ${data.name} that is saved in the API`
                                 }
@@ -72,119 +72,120 @@ export function fakeBackend() {
                                 ...account,
                                 token: generateJwtToken(account)
                             });
-                        });
+                });
+        }
+
+        function googleAuthenticate() {
+            console.log(`>> FAKE_BACKEND: authenticate()`)
+            const { res } = body()
+            if (R.isNil(res)) return unauthorized()
+            const profile = R.pathOr(null, ["profileObj"], res)
+            let account = accounts.find(x => x.socialId === profile.googleId);
+            if (!account) {
+                // create new account if first time logging in
+                account = {
+                    id: newAccountId(),
+                    socialId: profile.googleId,
+                    brand: "google",
+                    name: profile.name,
+                    extraInfo: `This is some extra info about ${profile.email} that is saved in the API`
                 }
+                accounts.push(account);
+                localStorage.setItem(accountsKey, JSON.stringify(accounts));
+            }
 
-                function googleAuthenticate() {
-                    console.log(`>> FAKE_BACKEND: authenticate()`)
-                    const { res } = body()
-                    if (R.isNil(res)) return unauthorized()
-                    const profile = R.pathOr(null, ["profileObj"], res)
-                    let account = accounts.find(x => x.googleId === profile.googleId);
-                    if (!account) {
-                        // create new account if first time logging in
-                        account = {
-                            id: newAccountId(),
-                            googleId: profile.googleId,
-                            name: profile.name,
-                            extraInfo: `This is some extra info about ${profile.email} that is saved in the API`
-                        }
-                        accounts.push(account);
-                        localStorage.setItem(accountsKey, JSON.stringify(accounts));
-                    }
-
-                    return ok({
-                        ...account,
-                        token: generateJwtToken(account)
-                    });
-                }
-
-                function getAccounts() {
-                    console.log(`>> FAKE_BACKEND: getAccounts()`)
-                    if (!isLoggedIn()) return unauthorized();
-                    return ok(accounts);
-                }
-
-                function getAccountById() {
-                    console.log(`>> FAKE_BACKEND: getAccountById()`)
-                    if (!isLoggedIn()) return unauthorized();
-
-                    let account = accounts.find(x => x.id === idFromUrl());
-                    return ok(account);
-                }
-
-                function updateAccount() {
-                    console.log(`>> FAKE_BACKEND: updateAccount()`)
-                    if (!isLoggedIn()) return unauthorized();
-
-                    let params = body();
-                    let account = accounts.find(x => x.id === idFromUrl());
-
-                    // update and save account
-                    Object.assign(account, params);
-                    localStorage.setItem(accountsKey, JSON.stringify(accounts));
-
-                    return ok(account);
-                }
-
-                function deleteAccount() {
-                    console.log(`>> FAKE_BACKEND: deleteAccount()`)
-                    if (!isLoggedIn()) return unauthorized();
-
-                    // delete account then save
-                    accounts = accounts.filter(x => x.id !== idFromUrl());
-                    localStorage.setItem(accountsKey, JSON.stringify(accounts));
-                    return ok();
-                }
-
-                // helper functions
-
-                function ok(body) {
-                    console.log(`>> FAKE_BACKEND: ok()`)
-                    // wrap in timeout to simulate server api call
-                    setTimeout(() => resolve({ status: 200, data: body }), 500);
-                }
-
-                function unauthorized() {
-                    console.log(`>> FAKE_BACKEND: unauthorized()`)
-                    setTimeout(() => {
-                        const response = { status: 401, data: { message: 'Unauthorized' } };
-                        reject(response);
-
-                        // manually trigger error interceptor
-                        const errorInterceptor = axios.interceptors.response.handlers[0].rejected;
-                        errorInterceptor({ response });
-                    }, 500);
-                }
-
-                function isLoggedIn() {
-                    return accountService.accountValue;
-                }
-
-                function idFromUrl() {
-                    const urlParts = url.split('/');
-                    return parseInt(urlParts[urlParts.length - 1]);
-                }
-
-                function body() {
-                    if (['post', 'put'].includes(method))
-                        return params[0];
-                }
-
-                function newAccountId() {
-                    return accounts.length ? Math.max(...accounts.map(x => x.id)) + 1 : 1;
-                }
-
-                function generateJwtToken(account) {
-                    console.log(`>> FAKE_BACKEND: generateJwtToken()`)
-                    // create token that expires in 15 minutes
-                    const tokenPayload = {
-                        exp: Math.round(new Date(Date.now() + 15 * 60 * 1000).getTime() / 1000),
-                        id: account.id
-                    }
-                    return `fake-jwt-token.${btoa(JSON.stringify(tokenPayload))}`;
-                }
+            return ok({
+                ...account,
+                token: generateJwtToken(account)
             });
         }
+
+        function getAccounts() {
+            console.log(`>> FAKE_BACKEND: getAccounts()`)
+            if (!isLoggedIn()) return unauthorized();
+            return ok(accounts);
+        }
+
+        function getAccountById() {
+            console.log(`>> FAKE_BACKEND: getAccountById()`)
+            if (!isLoggedIn()) return unauthorized();
+
+            let account = accounts.find(x => x.id === idFromUrl());
+            return ok(account);
+        }
+
+        function updateAccount() {
+            console.log(`>> FAKE_BACKEND: updateAccount()`)
+            if (!isLoggedIn()) return unauthorized();
+
+            let params = body();
+            let account = accounts.find(x => x.id === idFromUrl());
+
+            // update and save account
+            Object.assign(account, params);
+            localStorage.setItem(accountsKey, JSON.stringify(accounts));
+
+            return ok(account);
+        }
+
+        function deleteAccount() {
+            console.log(`>> FAKE_BACKEND: deleteAccount()`)
+            if (!isLoggedIn()) return unauthorized();
+
+            // delete account then save
+            accounts = accounts.filter(x => x.id !== idFromUrl());
+            localStorage.setItem(accountsKey, JSON.stringify(accounts));
+            return ok();
+        }
+
+        // helper functions
+
+        function ok(body) {
+            console.log(`>> FAKE_BACKEND: ok()`)
+            // wrap in timeout to simulate server api call
+            setTimeout(() => resolve({ status: 200, data: body }), 500);
+        }
+
+        function unauthorized() {
+            console.log(`>> FAKE_BACKEND: unauthorized()`)
+            setTimeout(() => {
+                const response = { status: 401, data: { message: 'Unauthorized' } };
+                reject(response);
+
+                // manually trigger error interceptor
+                const errorInterceptor = axios.interceptors.response.handlers[0].rejected;
+                errorInterceptor({ response });
+            }, 500);
+        }
+
+        function isLoggedIn() {
+            return accountService.accountValue;
+        }
+
+        function idFromUrl() {
+            const urlParts = url.split('/');
+            return parseInt(urlParts[urlParts.length - 1]);
+        }
+
+        function body() {
+            if (['post', 'put'].includes(method))
+                return params[0];
+        }
+
+        function newAccountId() {
+            return accounts.length ? Math.max(...accounts.map(x => x.id)) + 1 : 1;
+        }
+
+        function generateJwtToken(account) {
+            console.log(`>> FAKE_BACKEND: generateJwtToken()`)
+            // create token that expires in 15 minutes
+            const tokenPayload = {
+                exp: Math.round(new Date(Date.now() + 15 * 60 * 1000).getTime() / 1000),
+                id: account.id
+            }
+            return `fake-jwt-token.${btoa(JSON.stringify(tokenPayload))}`;
+        }
+    });
+}
     });
 }

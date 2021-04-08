@@ -6,6 +6,7 @@ import { accountService } from '_services';
 function Home() {
     const [mounted, setMounted] = useState(false);
     const [accounts, setAccounts] = useState(null);
+
     useEffect(() => {
         setMounted(true);
         accountService.getAll().then(x => setAccounts(x));
@@ -36,10 +37,11 @@ function Home() {
                 <thead>
                     <tr>
                         <th>Id</th>
-                        <th>Facebook Id</th>
-                        <th>Google Id</th>
+                        <th>Social Id</th>
+                        <th>Brand</th>
                         <th>Name</th>
                         <th>Extra Info</th>
+                        <th>Status</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -47,14 +49,15 @@ function Home() {
                     {accounts && accounts.map(account =>
                         <tr key={account.id}>
                             <td>{account.id}</td>
-                            <td>{account.facebookId}</td>
-                            <td>{account.googleId}</td>
+                            <td>{account.socialId}</td>
+                            <td>{account.brand}</td>
                             <td>{account.name}</td>
                             <td>{account.extraInfo}</td>
+                            <td style={{ color: 'green' }}>{account.id === accountService.accountValue?.id ? 'login' : '-'}</td>
                             <td className="text-right" style={{ whiteSpace: 'nowrap' }}>
                                 <Link to={`edit/${account.id}`} className="btn btn-sm btn-primary mr-1">Edit</Link>
                                 <button onClick={() => deleteAccount(account.id)} className="btn btn-sm btn-danger btn-delete-account" disabled={account.isDeleting}>
-                                    {account.isDeleting 
+                                    {account.isDeleting
                                         ? <span className="spinner-border spinner-border-sm"></span>
                                         : <span>Delete</span>
                                     }
