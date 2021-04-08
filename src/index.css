@@ -1,13 +1,24 @@
-a { cursor: pointer }
+a {
+    cursor: pointer
+}
 
 .btn-facebook {
     background: #3B5998;
     color: #fff;
-
 }
 
 .btn-facebook:hover {
     color: #fff;
+    opacity: 0.8;
+}
+
+.btn-line {
+    background: #00C300;
+    color: #fff;
+}
+
+.btn-line:hover {
+    color: #00E000;
     opacity: 0.8;
 }
 

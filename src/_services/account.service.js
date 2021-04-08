@@ -1,7 +1,7 @@
-import { BehaviorSubject } from 'rxjs';
 import axios from 'axios';
-
+import { BehaviorSubject } from 'rxjs';
 import { history } from '_helpers';
+
 
 const baseUrl = `${process.env.REACT_APP_API_URL}/accounts`;
 const accountSubject = new BehaviorSubject(null);
@@ -9,6 +9,8 @@ const accountSubject = new BehaviorSubject(null);
 export const accountService = {
     facebookLogin,
     googleLogin,
+    lineLogin,
+    lineAuthenticate,
     apiAuthenticate,
     logout,
     getAll,
@@ -20,7 +22,7 @@ export const accountService = {
 };
 
 async function facebookLogin() {
-    console.log("ACCOUNT_SERVICE: login()")
+    console.log("ACCOUNT_SERVICE: facebookLogin()")
     // login with facebook then authenticate with the API to get a JWT auth token
     const { authResponse } = await new Promise(window.FB.login);
     if (!authResponse) return;
@@ -33,7 +35,7 @@ async function facebookLogin() {
 }
 
 async function googleLogin(res) {
-    console.log("ACCOUNT_SERVICE: login()")
+    console.log("ACCOUNT_SERVICE: googleLogin()")
     // login with facebook then authenticate with the API to get a JWT auth token
     const response = await axios.post(`${baseUrl}/google/authenticate`, { res });
     const account = response.data;
@@ -42,6 +44,22 @@ async function googleLogin(res) {
     const { from } = history.location.state || { from: { pathname: "/" } };
     history.push(from);
 }
+
+async function lineLogin() {
+    console.log("ACCOUNT_SERVICE: lineLogin()")
+    // login with facebook then authenticate with the API to get a JWT auth token
+    history.push({ pathname: "/line-login" });
+}
+
+async function lineAuthenticate(code, state, qs) {
+    console.log("ACCOUNT_SERVICE: lineAuthenticate()")
+    // login with facebook then authenticate with the API to get a JWT auth token
+    const response = await axios.post(`${baseUrl}/line/authenticate`, { code, state, qs });
+    const account = response.data;
+    accountSubject.next(account);
+    history.push({ pathname: "/" });
+}
+
 
 async function apiAuthenticate(accessToken) {
     console.log("ACCOUNT_SERVICE: apiAuthenticate()")
