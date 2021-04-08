@@ -29,9 +29,10 @@ function Home() {
         });
     }
 
+
     return (
         <div>
-            <h2>You're logged in</h2>
+            <h2>Hello <span style={{ color: 'green' }}>{accountService.accountValue.name}</span>, You're logged in</h2>
             <p>All accounts from secure api end point:</p>
             <table className="table table-striped">
                 <thead>
